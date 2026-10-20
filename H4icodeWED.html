@@ -1,0 +1,777 @@
+```html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="Khám phá bộ sưu tập sản phẩm tại H4icode Store.">
+<meta name="robots" content="index,follow">
+<title>H4icode Store | Product Collection</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+  --black:#111;
+  --white:#fff;
+  --gray:#f4f4f4;
+  --muted:#777;
+  --line:#e5e5e5;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{
+  margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--black);
+  background:var(--white);overflow-x:hidden
+}
+button,input,select{font:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+
+header{
+  position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);animation:headerDrop .65s ease both
+}
+.topbar{
+  max-width:1280px;min-height:76px;padding:15px 28px;margin:auto;
+  display:flex;align-items:center;justify-content:space-between;gap:20px
+}
+.brand{
+  font-size:25px;font-weight:1000;letter-spacing:-1.5px;
+  transition:transform .3s ease
+}
+.brand:hover{transform:translateY(-2px)}
+.brand span{display:block;font-size:9px;letter-spacing:4px}
+nav{display:flex;align-items:center;gap:24px}
+nav a{
+  font-size:12px;font-weight:bold;text-transform:uppercase;position:relative
+}
+nav a::after{
+  content:"";position:absolute;left:0;bottom:-6px;height:1px;width:100%;
+  background:#111;transform:scaleX(0);transform-origin:right;
+  transition:transform .25s ease
+}
+nav a:hover::after{transform:scaleX(1);transform-origin:left}
+.menu-btn{display:none;background:none;border:0;font-size:25px}
+main{max-width:1280px;margin:auto;padding:0 28px}
+
+.hero{
+  margin-top:24px;min-height:420px;background:#ededed;
+  display:grid;grid-template-columns:1fr 1fr;overflow:hidden;
+  position:relative;animation:fadeUp .8s .1s both
+}
+.hero-copy{
+  padding:55px 35px;display:flex;flex-direction:column;
+  align-items:flex-start;justify-content:center;position:relative;z-index:1
+}
+.eyebrow{
+  font-size:11px;letter-spacing:3px;font-weight:bold;text-transform:uppercase
+}
+h1{
+  font-size:clamp(38px,5vw,67px);letter-spacing:-3px;line-height:.98;
+  margin:20px 0;font-weight:1000
+}
+.hero-copy p{max-width:360px;font-size:14px;line-height:1.8;color:#555}
+.hero-art{
+  min-height:320px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#dedede,#f9f9f9,#e4e4e4);
+  background-size:200% 200%;position:relative;overflow:hidden;
+  animation:gradientMove 8s ease infinite
+}
+.hero-art::before,.hero-art::after{
+  content:"";position:absolute;border:1px solid #ffffff9c;border-radius:50%;
+  width:280px;height:280px;animation:ringFloat 8s ease-in-out infinite
+}
+.hero-art::after{width:380px;height:380px;animation-delay:-3s}
+.hero-placeholder{
+  position:relative;z-index:1;text-align:center;font-size:90px;
+  font-weight:1000;letter-spacing:-8px;line-height:.9;transform:rotate(-10deg);
+  animation:logoFloat 4s ease-in-out infinite;text-shadow:8px 8px 0 #0000000d
+}
+
+.btn{
+  display:inline-flex;justify-content:center;align-items:center;gap:8px;
+  border:1px solid var(--black);padding:14px 21px;background:var(--black);
+  color:var(--white);font-size:11px;font-weight:bold;text-transform:uppercase;
+  transition:background .25s,color .25s,transform .25s,box-shadow .25s;
+  position:relative;overflow:hidden
+}
+.btn::before{
+  content:"";position:absolute;inset:0;background:#ffffff20;
+  transform:translateX(-110%);transition:transform .35s ease
+}
+.btn:hover::before{transform:translateX(0)}
+.btn:hover{
+  background:#333;border-color:#333;transform:translateY(-3px);
+  box-shadow:0 8px 18px #00000016
+}
+.btn:active{transform:scale(.97)}
+.btn.light{background:white;color:black}
+.btn.light:hover{background:#eee}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.section{padding:58px 0 15px}
+.section-head{
+  display:flex;align-items:end;justify-content:space-between;
+  gap:15px;margin-bottom:22px
+}
+h2{font-size:clamp(25px,3vw,35px);letter-spacing:-1.2px;margin:0}
+.section-head p{margin:7px 0 0;font-size:13px;color:var(--muted)}
+.categories{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px
+}
+.category{
+  min-height:95px;border:1px solid var(--line);background:white;padding:20px;
+  text-align:left;transition:background .3s,color .3s,transform .3s,border-color .3s
+}
+.category:hover{
+  transform:translateY(-5px);border-color:#111;box-shadow:0 10px 22px #0000000d
+}
+.category.active{background:var(--black);color:white}
+.category strong{display:block;font-size:14px}
+.category small{display:block;margin-top:9px;font-size:11px;opacity:.65}
+
+.tools{display:flex;gap:10px;margin:25px 0 20px}
+.tools input,.tools select{
+  border:1px solid #ddd;background:white;padding:12px;min-width:0;
+  outline:none;transition:border-color .25s,box-shadow .25s
+}
+.tools input:focus,.tools select:focus{
+  border-color:#111;box-shadow:0 0 0 3px #1111110d
+}
+.tools input{flex:1}
+.tools select{width:185px}
+
+.product-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:25px 15px
+}
+.product{min-width:0;transition:transform .3s ease}
+.product-image{
+  aspect-ratio:4/4.5;background:var(--gray);position:relative;overflow:hidden
+}
+.product-image img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .6s cubic-bezier(.2,.8,.2,1),filter .4s
+}
+.product:hover .product-image img{transform:scale(1.07);filter:contrast(1.03)}
+.product-placeholder{
+  width:100%;height:100%;min-height:150px;display:grid;place-items:center;
+  padding:15px;text-align:center;font-size:50px;font-weight:900;
+  background:linear-gradient(135deg,#f4f4f4,#e7e7e7);
+  transition:letter-spacing .3s,transform .4s
+}
+.product:hover .product-placeholder{letter-spacing:2px;transform:scale(1.04)}
+.tag{
+  position:absolute;left:10px;top:10px;background:white;color:black;
+  padding:7px 9px;font-size:9px;font-weight:bold;text-transform:uppercase
+}
+.product-info{padding:13px 0}
+.product-category{color:var(--muted);font-size:11px}
+.product h3{font-size:14px;margin:7px 0}
+.product-desc{
+  font-size:12px;color:var(--muted);line-height:1.6;min-height:36px;
+  overflow-wrap:anywhere
+}
+.price{font-weight:bold;font-size:14px;margin:10px 0 13px}
+.product-actions{display:flex;gap:7px}
+.product-actions .btn{padding:11px 8px;flex:1;font-size:9px}
+.product-actions .detail-btn{background:white;color:black}
+.product-actions .detail-btn:hover{background:#eee}
+
+.empty{
+  padding:45px 10px;text-align:center;color:var(--muted);
+  border:1px dashed var(--line);line-height:1.8
+}
+.loading{padding:40px 10px;text-align:center;color:var(--muted)}
+.about{
+  margin-top:70px;padding:45px 30px;background:var(--black);color:white;
+  display:flex;justify-content:space-between;align-items:center;gap:25px;
+  position:relative;overflow:hidden
+}
+.about::after{
+  content:"H4I";position:absolute;right:10%;top:50%;transform:translateY(-50%);
+  font-size:160px;font-weight:1000;color:#ffffff08;pointer-events:none
+}
+.about h2{max-width:520px;line-height:1.2;position:relative;z-index:1}
+.about p{color:#bbb;font-size:13px;line-height:1.8;max-width:480px}
+.about .btn{z-index:1}
+footer{
+  margin-top:60px;padding:28px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:15px;color:#777;font-size:11px
+}
+
+.overlay{
+  position:fixed;inset:0;z-index:30;background:#0009;display:none;
+  align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)
+}
+.overlay.open{display:flex;animation:overlayIn .25s ease both}
+.modal{
+  background:white;width:min(700px,100%);max-height:90vh;overflow:auto;
+  position:relative;padding:25px;animation:modalIn .35s cubic-bezier(.2,.8,.2,1) both
+}
+.close{
+  position:absolute;right:14px;top:12px;z-index:2;background:white;
+  border:1px solid #ddd;width:34px;height:34px;font-size:20px;
+  transition:transform .2s,background .2s,color .2s
+}
+.close:hover{transform:rotate(90deg);background:#111;color:white}
+.detail-layout{display:grid;grid-template-columns:1fr 1fr;gap:25px;padding-top:25px}
+.detail-image{
+  background:var(--gray);aspect-ratio:4/5;display:grid;place-items:center;overflow:hidden
+}
+.detail-image img{width:100%;height:100%;object-fit:cover}
+.detail-copy{padding-top:20px}
+.detail-copy h2{margin:12px 0}
+.detail-copy p{font-size:13px;color:#666;line-height:1.8;overflow-wrap:anywhere}
+.detail-copy .price{font-size:22px}
+.detail-copy .btn{width:100%;margin-top:10px}
+
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);
+  opacity:0;pointer-events:none;z-index:40;padding:13px 18px;background:#111;
+  color:white;font-size:12px;max-width:90%;text-align:center;
+  transition:opacity .3s,transform .3s
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.hidden{display:none!important}
+
+.reveal{opacity:0;transform:translateY(24px);
+  transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.product.reveal{transition-delay:var(--delay,0ms)}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes headerDrop{
+  from{opacity:0;transform:translateY(-12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes gradientMove{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+@keyframes logoFloat{
+  0%,100%{transform:translateY(0) rotate(-10deg)}
+  50%{transform:translateY(-10px) rotate(-7deg)}
+}
+@keyframes ringFloat{
+  0%,100%{transform:scale(1);opacity:.5}
+  50%{transform:scale(1.12);opacity:1}
+}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{
+  from{opacity:0;transform:translateY(20px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    scroll-behavior:auto!important;transition-duration:.01ms!important
+  }
+  .reveal{opacity:1;transform:none}
+}
+@media(max-width:850px){
+  .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .categories{grid-template-columns:repeat(2,minmax(0,1fr))}
+  nav{gap:12px}
+}
+@media(max-width:560px){
+  .topbar{padding:14px 16px;min-height:65px}
+  main{padding:0 16px}
+  .brand{font-size:22px}
+  .menu-btn{display:block}
+  nav{
+    display:none;position:absolute;top:100%;left:0;right:0;background:white;
+    border-bottom:1px solid var(--line);padding:18px;flex-direction:column;align-items:flex-start
+  }
+  nav.open{display:flex;animation:fadeUp .25s ease both}
+  .hero{grid-template-columns:1fr}
+  .hero-copy{padding:35px 22px}
+  .hero-art{min-height:200px;max-height:250px}
+  h1{font-size:47px}
+  .section{padding-top:42px}
+  .categories{gap:8px}
+  .category{padding:15px 12px}
+  .tools{flex-direction:column}
+  .tools select{width:100%}
+  .product-grid{gap:20px 10px}
+  .product-actions{flex-direction:column}
+  .product-actions .btn{width:100%}
+  .about{flex-direction:column;align-items:flex-start;padding:30px 20px}
+  .about::after{font-size:100px;right:0}
+  footer{padding:25px 16px;flex-direction:column}
+  .detail-layout{grid-template-columns:1fr;gap:10px}
+  .detail-image{max-height:300px}
+  .detail-copy{padding-top:5px}
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="topbar">
+    <a class="brand" href="#home" id="homeLink">
+      H4ICODE<span>STORE / COLLECTION</span>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-label="Mở menu" aria-expanded="false">☰</button>
+    <nav id="nav">
+      <a href="#home">Trang chủ</a>
+      <a href="#categories">Danh mục</a>
+      <a href="#products">Sản phẩm</a>
+      <a href="#contact">Liên hệ</a>
+    </nav>
+  </div>
+</header>
+
+<main id="home">
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">H4icode Store / Official Collection</span>
+      <h1>YOUR STYLE.<br>YOUR CHOICE.</h1>
+      <p>Khám phá những mẫu sản phẩm được tuyển chọn. Xem mẫu, chọn món yêu thích và liên hệ trực tiếp để hỏi mua.</p>
+      <a class="btn" href="#products">KHÁM PHÁ SẢN PHẨM ↗</a>
+    </div>
+    <div class="hero-art">
+      <div class="hero-placeholder">H4I<br>CODE</div>
+    </div>
+  </section>
+
+  <section class="section reveal" id="categories">
+    <div class="section-head">
+      <div>
+        <h2>DANH MỤC</h2>
+        <p>Chọn danh mục để tìm sản phẩm.</p>
+      </div>
+    </div>
+    <div class="categories" id="categoryGrid"></div>
+  </section>
+
+  <section class="section reveal" id="products">
+    <div class="section-head">
+      <div>
+        <h2 id="productHeading">SẢN PHẨM</h2>
+        <p id="productSubheading">Đang kết nối cửa hàng...</p>
+      </div>
+      <button class="btn detail-btn" id="showAllBtn" type="button">XEM TẤT CẢ</button>
+    </div>
+
+    <div class="tools">
+      <input id="searchInput" type="search" placeholder="Tìm tên sản phẩm..." aria-label="Tìm sản phẩm">
+      <select id="sortSelect" aria-label="Sắp xếp sản phẩm">
+        <option value="default">Sắp xếp mặc định</option>
+        <option value="low">Giá thấp đến cao</option>
+        <option value="high">Giá cao đến thấp</option>
+        <option value="name">Tên A–Z</option>
+      </select>
+    </div>
+
+    <div class="loading" id="loadingState">Đang tải sản phẩm...</div>
+    <div class="product-grid" id="productGrid"></div>
+    <div class="empty hidden" id="emptyState">
+      <strong>Chưa có sản phẩm.</strong><br>
+      Cửa hàng sẽ hiển thị sản phẩm tại đây khi được thêm vào.
+    </div>
+    <div class="empty hidden" id="errorState">
+      Chưa tải được sản phẩm. Vui lòng thử tải lại trang sau.
+    </div>
+  </section>
+
+  <section class="about reveal" id="contact">
+    <div>
+      <span class="eyebrow">Need more information?</span>
+      <h2>THÍCH MẪU NÀO?<br>NHẮN TIN CHO SHOP.</h2>
+      <p>Hỏi thêm về giá, kích cỡ, màu sắc và tình trạng hàng qua Zalo. Shop sẽ tư vấn trực tiếp cho bạn.</p>
+    </div>
+    <a class="btn light" id="mainZalo" href="https://zalo.me/84982089941" target="_blank" rel="noopener noreferrer">LIÊN HỆ ZALO ↗</a>
+  </section>
+</main>
+
+<footer>
+  <div><strong>H4ICODE STORE</strong><br><br>Product collection · Black & White</div>
+  <div>© <span id="year"></span> H4icode Store. All rights reserved.</div>
+</footer>
+
+<div class="overlay" id="detailOverlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Chi tiết sản phẩm">
+    <button class="close" id="closeDetailBtn" aria-label="Đóng">×</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* KẾT NỐI SUPABASE */
+const SUPABASE_URL = "https://gmwgmgkylcvxnerdullw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_st-kpcQlkBGbS6BuICnCQw_AUiqxjYf";
+
+/* ZALO CỦA SHOP */
+const ZALO_PHONE = "84982089941";
+
+/* TÊN BẢNG VÀ CÁC CỘT TRONG SUPABASE */
+const TABLE = "products";
+
+const $ = id => document.getElementById(id);
+
+let db = null;
+let products = [];
+let activeCategory = "all";
+let searchTerm = "";
+let sortMode = "default";
+let toastTimer;
+let revealObserver;
+let loadGeneration = 0;
+
+const categories = [
+  {id:"all",name:"Tất cả sản phẩm",desc:"Toàn bộ bộ sưu tập"}
+];
+
+function money(value) {
+  return Number(value || 0).toLocaleString("vi-VN") + "đ";
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[char]);
+}
+
+function validImage(url) {
+  try {
+    const parsed = new URL(String(url || ""));
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+function productImage(product) {
+  if (validImage(product.image_url)) {
+    return `<img
+      src="${escapeHTML(product.image_url)}"
+      alt="${escapeHTML(product.name)}"
+      loading="lazy"
+      onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')">
+      <div class="product-placeholder hidden">H4I</div>`;
+  }
+
+  return `<div class="product-placeholder">H4I</div>`;
+}
+
+function getZaloLink(message = "") {
+  const phone = ZALO_PHONE.replace(/\D/g, "");
+  if (!phone) return "";
+  const base = `https://zalo.me/${phone}`;
+  return message ? `${base}?text=${encodeURIComponent(message)}` : base;
+}
+
+function contactProduct(id) {
+  const product = products.find(item => String(item.id) === String(id));
+  if (!product) return;
+
+  const message =
+    `Xin chào shop! Mình muốn hỏi về sản phẩm "${product.name}". ` +
+    `Giá hiển thị: ${money(product.price)}. Shop tư vấn giúp mình nhé.`;
+
+  const link = getZaloLink(message);
+  if (!link) {
+    showToast("Chưa thiết lập số Zalo.");
+    return;
+  }
+
+  window.open(link, "_blank", "noopener,noreferrer");
+}
+
+function showToast(message) {
+  const toast = $("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
+}
+
+function normalizeCategory(value) {
+  return String(value || "").trim();
+}
+
+function getCategories() {
+  const unique = [...new Set(
+    products.map(product => normalizeCategory(product.category)).filter(Boolean)
+  )].sort((a,b) => a.localeCompare(b, "vi"));
+
+  return [
+    {id:"all",name:"Tất cả sản phẩm",desc:`${products.length} sản phẩm`},
+    ...unique.map(category => ({
+      id:category,
+      name:category,
+      desc:`Danh mục ${category}`
+    }))
+  ];
+}
+
+function drawCategories() {
+  const available = getCategories();
+
+  if (activeCategory !== "all" && !available.some(c => c.id === activeCategory)) {
+    activeCategory = "all";
+  }
+
+  $("categoryGrid").innerHTML = available.map(category => `
+    <button class="category ${activeCategory === category.id ? "active" : ""}"
+      data-cat="${escapeHTML(category.id)}" type="button">
+      <strong>${escapeHTML(category.name)}</strong>
+      <small>${escapeHTML(category.desc)}</small>
+    </button>
+  `).join("");
+
+  $("categoryGrid").querySelectorAll("[data-cat]").forEach(button => {
+    button.addEventListener("click", () => {
+      activeCategory = button.dataset.cat;
+      drawCategories();
+      drawProducts();
+      $("products").scrollIntoView({behavior:"smooth"});
+    });
+  });
+}
+
+function drawProducts() {
+  let list = products.filter(product => {
+    const category = normalizeCategory(product.category);
+    const matchCategory = activeCategory === "all" || category === activeCategory;
+    const text = [
+      product.name,
+      product.description,
+      product.category
+    ].join(" ").toLowerCase();
+
+    return matchCategory && text.includes(searchTerm.toLowerCase());
+  });
+
+  if (sortMode === "low") list.sort((a,b) => Number(a.price)-Number(b.price));
+  if (sortMode === "high") list.sort((a,b) => Number(b.price)-Number(a.price));
+  if (sortMode === "name") list.sort((a,b) => String(a.name).localeCompare(String(b.name),"vi"));
+
+  $("productHeading").textContent =
+    activeCategory === "all" ? "SẢN PHẨM" : activeCategory.toUpperCase();
+
+  $("productSubheading").textContent = `${list.length} sản phẩm`;
+
+  $("productGrid").innerHTML = list.map((product,index) => `
+    <article class="product reveal" style="--delay:${Math.min(index,7)*65}ms">
+      <div class="product-image">
+        ${productImage(product)}
+      </div>
+      <div class="product-info">
+        ${product.category ? `<div class="product-category">${escapeHTML(product.category)}</div>` : ""}
+        <h3>${escapeHTML(product.name || "Sản phẩm")}</h3>
+        <div class="product-desc">${escapeHTML(product.description || "Liên hệ shop để biết thêm chi tiết.")}</div>
+        <div class="price">${money(product.price)}</div>
+        <div class="product-actions">
+          <button class="btn detail-btn" data-detail="${escapeHTML(product.id)}" type="button">XEM MẪU</button>
+          <button class="btn" data-contact="${escapeHTML(product.id)}" type="button">HỎI MUA ↗</button>
+        </div>
+      </div>
+    </article>
+  `).join("");
+
+  const hasProducts = list.length > 0;
+  $("emptyState").classList.toggle("hidden", hasProducts);
+  $("productGrid").classList.toggle("hidden", !hasProducts);
+
+  $("productGrid").querySelectorAll("[data-detail]").forEach(button => {
+    button.addEventListener("click", () => openDetail(button.dataset.detail));
+  });
+
+  $("productGrid").querySelectorAll("[data-contact]").forEach(button => {
+    button.addEventListener("click", () => contactProduct(button.dataset.contact));
+  });
+
+  observeReveals();
+}
+
+function openDetail(id) {
+  const product = products.find(item => String(item.id) === String(id));
+  if (!product) return;
+
+  $("detailContent").innerHTML = `
+    <div class="detail-layout">
+      <div class="detail-image">${productImage(product)}</div>
+      <div class="detail-copy">
+        <div class="eyebrow">${escapeHTML(product.category || "H4ICODE STORE")}</div>
+        <h2>${escapeHTML(product.name || "Sản phẩm")}</h2>
+        <div class="price">${money(product.price)}</div>
+        <p>${escapeHTML(product.description || "Liên hệ cửa hàng để hỏi thêm về sản phẩm.")}</p>
+        <button class="btn" id="detailBuy" type="button">HỎI MUA QUA ZALO ↗</button>
+      </div>
+    </div>
+  `;
+
+  $("detailBuy").addEventListener("click", () => contactProduct(id));
+  $("detailOverlay").classList.add("open");
+  $("detailOverlay").setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  $("closeDetailBtn").focus();
+}
+
+function closeDetail() {
+  $("detailOverlay").classList.remove("open");
+  $("detailOverlay").setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+function showAll() {
+  activeCategory = "all";
+  searchTerm = "";
+  $("searchInput").value = "";
+  drawCategories();
+  drawProducts();
+}
+
+function toggleMenu() {
+  const open = $("nav").classList.toggle("open");
+  $("menuBtn").setAttribute("aria-expanded", String(open));
+}
+
+function closeMenu() {
+  $("nav").classList.remove("open");
+  $("menuBtn").setAttribute("aria-expanded", "false");
+}
+
+function observeReveals() {
+  const items = document.querySelectorAll(".reveal:not(.visible)");
+
+  if (!("IntersectionObserver" in window)) {
+    items.forEach(item => item.classList.add("visible"));
+    return;
+  }
+
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, {threshold:0.08,rootMargin:"0px 0px -25px 0px"});
+  }
+
+  items.forEach(item => revealObserver.observe(item));
+}
+
+async function loadProducts() {
+  const generation = ++loadGeneration;
+
+  $("loadingState").classList.remove("hidden");
+  $("errorState").classList.add("hidden");
+  $("emptyState").classList.add("hidden");
+  $("productGrid").classList.add("hidden");
+  $("productSubheading").textContent = "Đang tải dữ liệu...";
+
+  try {
+    const {data,error} = await db
+      .from(TABLE)
+      .select("id,name,price,category,description,image_url,created_at")
+      .order("created_at", {ascending:false});
+
+    if (error) throw error;
+    if (generation !== loadGeneration) return;
+
+    products = (data || []).map(product => ({
+      ...product,
+      price: Number(product.price || 0)
+    }));
+
+    $("loadingState").classList.add("hidden");
+
+    if (!products.length) {
+      $("productHeading").textContent = "SẢN PHẨM";
+      $("productSubheading").textContent = "0 sản phẩm";
+      $("emptyState").classList.remove("hidden");
+      $("productGrid").classList.add("hidden");
+      drawCategories();
+      return;
+    }
+
+    $("productGrid").classList.remove("hidden");
+    drawCategories();
+    drawProducts();
+  } catch (error) {
+    if (generation !== loadGeneration) return;
+
+    console.error("Lỗi tải sản phẩm:", error);
+    $("loadingState").classList.add("hidden");
+    $("productGrid").classList.add("hidden");
+    $("emptyState").classList.add("hidden");
+    $("errorState").classList.remove("hidden");
+    $("productSubheading").textContent = "Không tải được dữ liệu";
+  }
+}
+
+function init() {
+  $("year").textContent = new Date().getFullYear();
+
+  $("searchInput").addEventListener("input", event => {
+    searchTerm = event.target.value.trim();
+    drawProducts();
+  });
+
+  $("sortSelect").addEventListener("change", event => {
+    sortMode = event.target.value;
+    drawProducts();
+  });
+
+  $("mainZalo").href = getZaloLink() || "https://zalo.me/";
+  $("homeLink").addEventListener("click", () => {
+    showAll();
+    closeMenu();
+  });
+
+  $("menuBtn").addEventListener("click", toggleMenu);
+  $("nav").querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", closeMenu);
+  });
+
+  $("showAllBtn").addEventListener("click", showAll);
+  $("closeDetailBtn").addEventListener("click", closeDetail);
+
+  $("detailOverlay").addEventListener("click", event => {
+    if (event.target === $("detailOverlay")) closeDetail();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      closeDetail();
+      closeMenu();
+    }
+  });
+
+  observeReveals();
+
+  if (!window.supabase || !SUPABASE_URL || !SUPABASE_KEY) {
+    $("loadingState").classList.add("hidden");
+    $("errorState").classList.remove("hidden");
+    $("productSubheading").textContent = "Chưa cấu hình kết nối";
+    return;
+  }
+
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  loadProducts();
+}
+
+init();
+</script>
+</body>
+</html>
+```
